@@ -30,9 +30,16 @@ const App = ({ breakLength, session, changeBreak, changeSession }) => {
         break;
     }
 
+    let audio = document.getElementById("beep");
+    if (segundos === 0 && minutos === 0) {
+      audio.play();
+      setTimeout(() => {
+        audio.pause();
+      }, 1000)
+    }
     if (timerOn) {
       interval = setInterval(() => {
-        if (segundos === 1 && minutos === 0) {
+        if (segundos === 0 && minutos === 0) {
           if (actualTime === 'session') {
             setActualTime('newBreak');
           } else {
@@ -44,9 +51,7 @@ const App = ({ breakLength, session, changeBreak, changeSession }) => {
         } else {
           setSegundos(prevTime => prevTime - 1);
         }
-        // setSegundos(prevTime => prevTime - 1)
-        // setMinutos(prevTime => prevTime - 1)
-      }, 100)
+      }, 1000)
     } else {
       clearInterval(interval);
     }
@@ -59,6 +64,11 @@ const App = ({ breakLength, session, changeBreak, changeSession }) => {
   const refresh = () => {
     setTimerOn(false);
     setActualTime('newSession');
+    changeSession(false, true);
+    changeBreak(false, true);
+    let audio = document.getElementById("beep");
+    audio.pause();
+    audio.currentTime = 0;
   }
 
   return (
@@ -67,21 +77,21 @@ const App = ({ breakLength, session, changeBreak, changeSession }) => {
       <div>
         <div className="config inline">
           <div id="break-label">Break Length</div>
-          <button id="break-decrement" onClick={() => changeBreak(false)}>
+          <button id="break-decrement" onClick={() => timerOn ? null : changeBreak(false)}>
             <i className="fa fa-arrow-down fa-2x"></i>
           </button>
           <div id="break-length" className="inline">{breakLength}</div>
-          <button id="break-increment" onClick={() => changeBreak(true)}>
+          <button id="break-increment" onClick={() => timerOn ? null : changeBreak(true)}>
             <i className="fa fa-arrow-up fa-2x"></i>
           </button>
         </div>
         <div className="config inline">
           <div id="session-label">Session Length</div>
-          <button id="session-decrement" onClick={() => changeSession(false)}>
+          <button id="session-decrement" onClick={() => timerOn ? null : changeSession(false)}>
             <i className="fa fa-arrow-down fa-2x"></i>
           </button>
           <div id="session-length" className="inline">{session}</div>
-          <button id="session-increment" onClick={() => changeSession(true)}>
+          <button id="session-increment" onClick={() => timerOn ? null : changeSession(true)}>
             <i className="fa fa-arrow-up fa-2x"></i>
           </button>
         </div>
@@ -96,6 +106,7 @@ const App = ({ breakLength, session, changeBreak, changeSession }) => {
           {':'}
           {('0' + segundos).slice(-2)}
         </div>
+        <audio id="beep" preload="auto" src="https://raw.githubusercontent.com/freeCodeCamp/cdn/master/build/testable-projects-fcc/audio/BeepSound.wav"></audio>
       </div>
       <div className="controler">
         <button id="start_stop" onClick={() => setTimerOn(!timerOn)}>
@@ -115,16 +126,18 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
-  changeBreak(isUp) {
+  changeBreak(isUp, reset) {
     dispatch({
       type: "BREAK_CHANGE",
-      up: isUp
+      up: isUp,
+      reset
     })
   },
-  changeSession(isUp) {
+  changeSession(isUp, reset) {
     dispatch({
       type: "SESSION_CHANGE",
-      up: isUp
+      up: isUp,
+      reset
     })
   }
 });
